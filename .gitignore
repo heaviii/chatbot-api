@@ -1,0 +1,10 @@
+./venv
+./logs
+./.vscode
+./*/__pychahe__
+./config.py
+./index.json
+./.gitignore
+./vector_store_cache
+./chroma
+./__pychahe__
