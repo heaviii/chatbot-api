@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>前端聊天界面</title>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .chat-container {
+            width: 600px;
+            height: 700px;
+            /* 调整聊天框高度 */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: auto;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            /* 调整与发送框的间距 */
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .user-message {
+            background-color: #d3d3d3;
+            color: #fff;
+            align-self: flex-end;
+        }
+
+        .bot-message {
+            background-color: #f0f0f0;
+        }
+
+        input[type="text"] {
+            height: 50px;
+            width: 90%;
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+
+        .user-input-container {
+            border: 1px solid #ccc;
+            /* 添加边框样式 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .user-input-container input[type="text"] {
+            flex-grow: 1;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <div class="chat-container" id="chatContainer"></div>
+        <div class="user-input-container">
+            <input type="text" id="userInput" placeholder="请输入您的问题" onkeydown="checkKeyPress(event)" />
+            <button onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        // 获取聊天容器和用户输入框
+        const chatContainer = document.getElementById('chatContainer');
+        const userInput = document.getElementById('userInput');
+
+        const ROLE_AI = "AI: "
+        const ROLE_HUMAN = "HUMAN: "
+
+        function checkKeyPress(event) {
+            // 检查是否按下回车键
+            if (event.keyCode === 13) {
+                // 阻止事件的默认行为
+                event.preventDefault();
+                // 调用发送消息函数
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            // 获取用户输入
+            const userMessage = userInput.value;
+            // 清空用户输入框
+            userInput.value = '';
+
+            // 创建并添加用户消息到聊天容器
+            const userMessageElement = document.createElement('div');
+            userMessageElement.classList.add('message', 'user-message');
+            userMessageElement.innerHTML = ROLE_HUMAN + userMessage;
+            chatContainer.appendChild(userMessageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // 发送用户消息给后端处理
+            sendUserMessageToBackend(userMessage);
+        }
+
+        /* function sendUserMessageToBackend(message) {
+            // 发送用户消息给后端进行处理
+            // 在这里你可以使用AJAX、WebSocket或其他方式发送消息给后端
+
+            // 接收后端返回的回答
+            const botMessage = '这是后端返回的回答';
+
+            // 创建并添加机器人的回答到聊天容器
+            const botMessageElement = document.createElement('div');
+            botMessageElement.classList.add('message', 'bot-message');
+            botMessageElement.innerHTML = botMessage;
+            chatContainer.appendChild(botMessageElement);
+
+            // 滚动到底部以显示最新的消息
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        } */
+        function sendUserMessageToBackend(message) {
+            const botMessage = '...';
+
+            // 创建并添加机器人的回答到聊天容器
+            const botMessageElement = document.createElement('div');
+            botMessageElement.classList.add('message', 'bot-message');
+            botMessageElement.innerHTML = ROLE_AI + botMessage;
+            chatContainer.appendChild(botMessageElement);
+
+            const xhr = new XMLHttpRequest();
+            //文档
+            //xhr.open('GET', `http://127.0.0.1:8000/knowbox/chatStream?content=${encodeURIComponent(message)}&user_id=1102`, true);
+            //文档
+            //xhr.open('GET', `http://127.0.0.1:8000/llm/chatStream?content=${encodeURIComponent(message)}&user_id=110`, true);
+            //记忆力
+            xhr.open('GET', `http://127.0.0.1:8000/chatgpt/chatStream?content=${encodeURIComponent(message)}&user_id=1104`, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 3 && xhr.status === 200) {
+                    // 通过流式返回的数据更新聊天界面
+                    botMessageElement.innerHTML = ROLE_AI + xhr.responseText;
+                    // 滚动到底部以显示最新的消息
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            };
+
+            xhr.send();
+        }
+    </script>
+</body>
+
+</html>
